@@ -8,7 +8,8 @@ fun main() {
 
     wordsFile.forEachLine {
         val line = it.split("|")
-        val word = Word(line[0], line[1], line[2].toIntOrNull() ?: 0)
+        val cac = line[2].toIntOrNull() ?: 0
+        val word = Word(line[0], line[1], cac)
         dictionary.add(word)
     }
 
