@@ -1,4 +1,4 @@
-package org.example.ktb_06
+package org.example.ktb_console
 
 data class Word (
     val original: String,

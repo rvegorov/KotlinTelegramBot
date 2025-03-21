@@ -1,36 +1,44 @@
-package org.example.ktb_06
+package org.example.ktb_console
 
 import java.io.File
 
 fun main() {
-    var dictionary = loadDictionary("words.txt")
-
-    printMenu()
+    val dictionary = loadDictionary(DICTIONARY_FILE)
 
     while (true) {
+        printMenu()
         print("Выберите пункт меню: ")
         val selectedItem = readln().toInt()
         when (selectedItem) {
             // Учить слова
             1 -> {
                 println("\nВы выбрали \"Учить слова\"")
-                val notLearnedList: MutableList<Word> =
-                    dictionary.filter { it.correctAnswersCount < MIN_LEARNED }.toMutableList()
+                val notLearnedList: List<Word> =
+                    dictionary.filter { it.correctAnswersCount < MIN_LEARNED }
 
                 if (notLearnedList.isEmpty()) {
                     println("Все слова в словаре выучены!")
-                    printMenu()
                 } else {
                     val questionWords = notLearnedList.shuffled().take(ANSWER_VARIANTS_COUNT)
-                    val rightWord = questionWords.random()
-                    println()
-                    println("${rightWord.original}:")
+                    val correctAnswer = questionWords.random()
+                    val correctAnswerId = questionWords.indexOf(correctAnswer)
+                    println("\n${correctAnswer.original}:")
                     questionWords.forEachIndexed { i, word ->
-                        println("$i - ${word.translate}")
+                        println(" ${i + 1} - ${word.translate}")
                     }
+                    println(" ----------\n 0 - меню")
 
                     print("Ваш ответ: ")
-                    val userAnswer = readln().toInt()
+                    val userAnswerInput = readln().toInt()
+
+                    if (userAnswerInput == 0) {
+                    } else if (userAnswerInput - 1 == correctAnswerId) {
+                        correctAnswer.correctAnswersCount++
+                        println("Правильно!\n")
+                        saveDictionary(dictionary, DICTIONARY_FILE)
+                    } else {
+                        println("Не правильно! \"${correctAnswer.original}\" - это \"${correctAnswer.translate}\" \n")
+                    }
                 }
             }
             // Статистика
@@ -39,7 +47,6 @@ fun main() {
                 val totalCount = dictionary.count()
                 val percent = learnedCount / totalCount * 100
                 println("\n Статистика: \nВыучено $learnedCount из $totalCount | $percent%)\n")
-                printMenu()
             }
             // Выход
             0 -> break
@@ -47,7 +54,7 @@ fun main() {
     }
 }
 
-fun loadDictionary(dictionaryFile: String): MutableList<Word> {
+fun loadDictionary(dictionaryFile: String): List<Word> {
     val dictionary: MutableList<Word> = mutableListOf()
     File(dictionaryFile).forEachLine {
         val line = it.split("|")
@@ -66,9 +73,14 @@ fun printMenu() {
     )
 }
 
-fun MutableList<Word>.countLearned(): Int {
-    return this.filter { it.correctAnswersCount >= MIN_LEARNED }.count()
+fun saveDictionary(dictionary: List<Word>, dictionaryFile: String) {
+    val dictionaryText = dictionary.joinToString("\n") { word ->
+        "${word.original}|${word.translate}|${word.correctAnswersCount}"
+    }
+
+    File(dictionaryFile).writeText(dictionaryText)
 }
 
 const val MIN_LEARNED = 3
 const val ANSWER_VARIANTS_COUNT = 4
+const val DICTIONARY_FILE = "words.txt"
