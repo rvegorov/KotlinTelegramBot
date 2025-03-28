@@ -1,14 +1,14 @@
-hello|привет|0
-dog|собака|3
-cat|кошка|3
+hello|привет|1
+dog|собака|2
+cat|кошка|0
 thank you|спасибо|3
 bird|птица|0
-sun|солнце|2
+sun|солнце|0
 bread|хлеб|0
 keyboard|клавиатура|0
 incomprehensibility|непостижимость|0
-headphones|наушники|1
+headphones|наушники|0
 walk|ходить|0
-beer|пиво|0
-bear|медведь|0
-cut|резать|1
+beer|пиво|2
+bear|медведь|1
+cut|резать|2
