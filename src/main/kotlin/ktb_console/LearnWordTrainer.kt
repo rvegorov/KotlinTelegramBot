@@ -2,22 +2,31 @@ package org.example.ktb_console
 
 import java.io.File
 
-class LearnWordTrainer(private val dictionaryFile: String) {
-    private val dictionary = loadDictionary(dictionaryFile)
+class LearnWordTrainer(private val dictionaryFile: String, private val minLearned: Int) {
+    val dictionary = loadDictionary(dictionaryFile)
     private var question: Question? = null
 
     fun getStatistics(): Statistics {
-        val learnedCount = dictionary.count { it.correctAnswersCount >= MIN_LEARNED }
+        val learnedCount = dictionary.count { it.correctAnswersCount >= minLearned }
         val totalCount = dictionary.count()
         val percent = learnedCount / totalCount * 100
         return Statistics(learnedCount, totalCount, percent)
     }
 
     fun getNextQuestion(maxVariants: Int): Question? {
-        val notLearnedList = dictionary.filter { it.correctAnswersCount < MIN_LEARNED }
-        val questionWords = notLearnedList.shuffled().take(maxVariants)
+        val notLearnedList = dictionary.filter { it.correctAnswersCount < minLearned }
+
+        if (notLearnedList.isEmpty()) {
+            return null
+        }
+        val questionWords = if (notLearnedList.size < maxVariants) {
+            val learnedList = dictionary.filter { it.correctAnswersCount >= minLearned }
+            (notLearnedList + learnedList.take(maxVariants - notLearnedList.size)).shuffled()
+        } else {
+            notLearnedList.shuffled().take(maxVariants)
+        }
         val correctAnswer = questionWords.random()
-        if (notLearnedList.isEmpty()) return null
+
         question = Question(
             variants = questionWords,
             correctAnswer = correctAnswer,
@@ -40,6 +49,7 @@ class LearnWordTrainer(private val dictionaryFile: String) {
     }
 
     private fun loadDictionary(dictionaryFile: String = this.dictionaryFile): List<Word> {
+
         val dictionary: MutableList<Word> = mutableListOf()
         File(dictionaryFile).forEachLine {
             val line = it.split("|")

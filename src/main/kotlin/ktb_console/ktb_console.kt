@@ -1,7 +1,7 @@
 package org.example.ktb_console
 
 fun Question.toConsoleString(): String {
-    return  "\n${correctAnswer.original}:\n" +
+    return "\n${correctAnswer.original}:\n" +
             variants.mapIndexed { i, word ->
                 " ${i + 1} - ${word.translate}"
             }.joinToString("\n") +
@@ -10,17 +10,28 @@ fun Question.toConsoleString(): String {
 }
 
 fun main() {
-    val trainer = LearnWordTrainer(DICTIONARY_FILE)
+
+    val trainer = try {
+        LearnWordTrainer(DICTIONARY_FILE, MIN_LEARNED)
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
+        if (trainer.dictionary.isEmpty()) {
+            println("Словарь пуст")
+            return
+        }
         printMenu()
         print("Выберите пункт меню: ")
-        val selectedItem = readln().toInt()
+        val selectedItem = readln().toIntOrNull()
+        if (selectedItem == null || selectedItem !in (0..2)) println("\nВыберите 0, 1 или 2")
         when (selectedItem) {
             // Учить слова
             1 -> {
+                println("\nВы выбрали \"Учить слова\"")
                 while (true) {
-                    println("\nВы выбрали \"Учить слова\"")
                     val question = trainer.getNextQuestion(ANSWER_VARIANTS_COUNT)
                     if (question == null) {
                         println("Все слова в словаре выучены!")
@@ -33,7 +44,7 @@ fun main() {
                         } else if (trainer.checkAnswer(userAnswerInput - 1)) {
                             println("Правильно!\n")
                         } else {
-                            println("Неправильно! \"${question.correctAnswer.original}\" - это \"${question.correctAnswer.translate}\" \n")
+                            println("Неправильно! \"${question.correctAnswer.original}\" - это \"${question.correctAnswer.translate}\"")
                         }
                     }
                 }
@@ -48,7 +59,6 @@ fun main() {
         }
     }
 }
-
 
 fun printMenu() {
     println(
