@@ -7,16 +7,19 @@ import java.net.http.HttpResponse
 
 fun main(args: Array<String>) {
     val botToken = args[0]
-    var updateId: Int = 0
+    var updateId = 0
 
     while (true) {
         val updates = getUpdates(botToken, updateId)
-        val startUpdateId = updates.lastIndexOf("update_id") + 11
-        val endUpdateId = updates.lastIndexOf(",\n\"message\"")
-        if (startUpdateId == -1 || endUpdateId == -1) continue
-        val updateIdStr = updates.substring(startUpdateId, endUpdateId)
-        updateId = updateIdStr.toInt() + 1
+
+        val updateRegex: Regex = "\"update_id\":(.+?),".toRegex()
+        val matchResult: MatchResult = updateRegex.find(updates) ?: continue
+
+        val updateIdStr: String? = matchResult.groups[1]?.value
+        updateId = if (updateIdStr != null) updateIdStr.toInt() + 1 else updateId
         println(updates)
+        println(updateId)
+
         Thread.sleep(3000)
     }
 
