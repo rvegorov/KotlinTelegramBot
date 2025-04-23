@@ -8,10 +8,10 @@ import java.net.http.HttpResponse
 class TelegramBotService(
     val botToken: String,
 ) {
+    private val client: HttpClient = HttpClient.newBuilder().build()
     private fun makeRequest(method: String, queryString: String = ""): String {
-        var url = "https://api.telegram.org/bot$botToken/$method"
+        var url = "$TELEGRAM_API_URL/bot$botToken/$method"
         if (queryString != "") url += "?$queryString"
-        val client: HttpClient = HttpClient.newBuilder().build()
         val request: HttpRequest = HttpRequest.newBuilder(URI.create(url)).build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
 
@@ -22,7 +22,7 @@ class TelegramBotService(
         return makeRequest("getUpdates", "offset=$updateId")
     }
 
-    fun sendMessage(chatId: String, text: String): String {
+    fun sendMessage(chatId: Int, text: String): String {
         return makeRequest("sendMessage", "chat_id=$chatId&text=$text")
     }
 }
