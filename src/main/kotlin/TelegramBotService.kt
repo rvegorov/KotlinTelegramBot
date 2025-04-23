@@ -8,9 +8,10 @@ import java.net.http.HttpResponse
 class TelegramBotService(
     val botToken: String,
 ) {
+    private val telegramApiUrl = "https://api.telegram.org"
     private val client: HttpClient = HttpClient.newBuilder().build()
     private fun makeRequest(method: String, queryString: String = ""): String {
-        var url = "$TELEGRAM_API_URL/bot$botToken/$method"
+        var url = "$telegramApiUrl/bot$botToken/$method"
         if (queryString != "") url += "?$queryString"
         val request: HttpRequest = HttpRequest.newBuilder(URI.create(url)).build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())

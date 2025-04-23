@@ -17,10 +17,10 @@ fun main(args: Array<String>) {
         updateId = if (updateIdStr != null) updateIdStr.toInt() + 1 else updateId
 
         val chatIdMatch = chatIdRegex.find(updates) ?: continue
-        val chatId = chatIdMatch.groups[1]?.value?.toInt() ?: continue
+        val chatId = chatIdMatch.groups[1]?.value?.toIntOrNull() ?: continue
 
         val messageTextMatch = messageTextRegex.find(updates) ?: continue
-        val messageText = messageTextMatch.groups[1]?.value ?: ""
+        val messageText = messageTextMatch.groups[1]?.value ?: continue
         if (messageText == "Hello") botService.sendMessage(chatId, "Hello")
 
         println(messageText)
@@ -29,4 +29,4 @@ fun main(args: Array<String>) {
     }
 }
 
-const val TELEGRAM_API_URL = "https://api.telegram.org"
+
