@@ -1,4 +1,4 @@
-package org.example.ktb_console
+package org.example
 
 import java.io.File
 
@@ -77,3 +77,13 @@ data class Question(
     val variants: List<Word>,
     val correctAnswer: Word,
 )
+
+data class Word (
+    val original: String,
+    val translate: String,
+    var correctAnswersCount: Int = 0
+)
+
+const val MIN_LEARNED = 3
+const val ANSWER_VARIANTS_COUNT = 4
+const val DICTIONARY_FILE = "words.txt"
