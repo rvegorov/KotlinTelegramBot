@@ -9,8 +9,8 @@ class LearnWordTrainer(private val dictionaryFile: String, private val minLearne
     fun getStatistics(): Statistics {
         val learnedCount = dictionary.count { it.correctAnswersCount >= minLearned }
         val totalCount = dictionary.count()
-        val percent = learnedCount / totalCount * 100
-        return Statistics(learnedCount, totalCount, percent)
+        val percent: Float = learnedCount.toFloat() / totalCount.toFloat() * 100
+        return Statistics(learnedCount, totalCount, percent.toInt())
     }
 
     fun getNextQuestion(maxVariants: Int): Question? {
@@ -78,7 +78,7 @@ data class Question(
     val correctAnswer: Word,
 )
 
-data class Word (
+data class Word(
     val original: String,
     val translate: String,
     var correctAnswersCount: Int = 0

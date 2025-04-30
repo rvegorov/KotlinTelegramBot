@@ -35,8 +35,9 @@ fun main(args: Array<String>) {
 
         if (messageText == "Hello") botService.sendMessage(chatId, "Hello")
         if (messageText == "/start") botService.sendMenu(chatId)
-        if (data == "statistics_clicked") botService.sendMessage(chatId, "Статистика:")
-        if (data == "learnWords_clicked") botService.sendMessage(chatId, "Изучаем слова:")
+        if (data == botService.toStatisticsData) botService.sendStatistics(chatId, trainer.getStatistics())
+        if (data == botService.toLearnWordsData) botService.sendMessage(chatId, "Изучаем слова:")
+        if (data == botService.toMenuData) botService.sendMenu(chatId)
 
         println(messageText)
         println(updates)

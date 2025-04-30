@@ -11,8 +11,13 @@ class TelegramBotService(
     val botToken: String,
 ) {
     private val telegramApiUrl = "https://api.telegram.org"
+    val toStatisticsData = "statistics_clicked"
+    val toLearnWordsData = "learnWords_clicked"
+    val toMenuData = "menu_clicked"
+
     private val client: HttpClient = HttpClient.newBuilder().build()
-    private fun makeRequest(request: HttpRequest): String{
+
+    private fun makeRequest(request: HttpRequest): String {
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
         return response.body()
     }
@@ -46,7 +51,8 @@ class TelegramBotService(
         val menuBody = """
             {
                 "chat_id": "$chatId",
-                "text": "Меню",
+                "text": "<b>Меню</b>",
+                "parse_mode" : "HTML",
                 "reply_markup": {
                     "inline_keyboard": [
                         [
@@ -66,5 +72,28 @@ class TelegramBotService(
             }
         """.trimIndent()
         return makePostRequest("sendMessage", "application/json", menuBody)
+    }
+
+    fun sendStatistics(chatId: Int, statistics: Statistics): String {
+        val statisticsBody = """
+            {
+                "chat_id": "$chatId",
+                "text": "<b>Статистика:</b>
+                Выучено слов: ${statistics.learnedCount} из ${statistics.totalCount} (${statistics.percent}%)
+                ",
+                "parse_mode" : "HTML",
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [
+                            {
+                                "text": "назад",
+                                "callback_data": "menu_clicked"
+                            }
+                        ]
+                    ]
+                }
+            }
+        """.trimIndent()
+        return makePostRequest("sendMessage", "application/json", statisticsBody)
     }
 }
