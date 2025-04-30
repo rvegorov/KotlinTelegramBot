@@ -1,5 +1,7 @@
 package org.example.ktb_console
 
+import org.example.*
+
 fun Question.toConsoleString(): String {
     return "\n${correctAnswer.original}:\n" +
             variants.mapIndexed { i, word ->
@@ -69,6 +71,3 @@ fun printMenu() {
     )
 }
 
-const val MIN_LEARNED = 3
-const val ANSWER_VARIANTS_COUNT = 4
-const val DICTIONARY_FILE = "words.txt"

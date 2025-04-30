@@ -9,6 +9,14 @@ fun main(args: Array<String>) {
     val updateRegex: Regex = "\"update_id\":(.+?),".toRegex()
     val chatIdRegex = "(?s)(?:chat.*?id.*?:.*?)(.*?),".toRegex()
     val messageTextRegex = "(?s)(?:message.*?text.*?:.*?\")(.*?)(?:\")".toRegex()
+    val dataRegex: Regex = "(?s)(?:\"data\".*?)\"(.*?)\"".toRegex()
+
+    val trainer = try {
+        LearnWordTrainer(DICTIONARY_FILE, MIN_LEARNED)
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
         val updates = botService.getUpdates(updateId)
@@ -21,12 +29,18 @@ fun main(args: Array<String>) {
 
         val messageTextMatch = messageTextRegex.find(updates) ?: continue
         val messageText = messageTextMatch.groups[1]?.value ?: continue
+
+        val data = dataRegex.find(updates)?.groups?.get(1)?.value
+
+
         if (messageText == "Hello") botService.sendMessage(chatId, "Hello")
+        if (messageText == "/start") botService.sendMenu(chatId)
+        if (data == "statistics_clicked") botService.sendMessage(chatId, "Статистика:")
+        if (data == "learnWords_clicked") botService.sendMessage(chatId, "Изучаем слова:")
 
         println(messageText)
         println(updates)
         Thread.sleep(3000)
+
     }
 }
-
-
