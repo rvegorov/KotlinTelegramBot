@@ -10,10 +10,6 @@ import java.nio.charset.StandardCharsets
 class TelegramBotService(
     val botToken: String,
 ) {
-    private val telegramApiUrl = "https://api.telegram.org"
-    val toStatisticsData = "statistics_clicked"
-    val toLearnWordsData = "learnWords_clicked"
-    val toMenuData = "menu_clicked"
 
     private val client: HttpClient = HttpClient.newBuilder().build()
 
@@ -23,14 +19,14 @@ class TelegramBotService(
     }
 
     private fun makeGetRequest(method: String, queryString: String = ""): String {
-        var url = "$telegramApiUrl/bot$botToken/$method"
+        var url = "$TELEGRAM_API_URL/bot$botToken/$method"
         if (queryString != "") url += "?$queryString"
         val request: HttpRequest = HttpRequest.newBuilder(URI.create(url)).build()
         return makeRequest(request)
     }
 
     private fun makePostRequest(method: String, dataType: String, data: String): String {
-        val url = "$telegramApiUrl/bot$botToken/$method"
+        val url = "$TELEGRAM_API_URL/bot$botToken/$method"
         val request: HttpRequest = HttpRequest.newBuilder(URI.create(url))
             .header("Content-type", dataType)
             .POST(HttpRequest.BodyPublishers.ofString(data))
@@ -95,5 +91,12 @@ class TelegramBotService(
             }
         """.trimIndent()
         return makePostRequest("sendMessage", "application/json", statisticsBody)
+    }
+
+    companion object {
+        private const val TELEGRAM_API_URL = "https://api.telegram.org"
+        const val TO_STATISTICS_DATA = "statistics_clicked"
+        const val TO_LEARN_WORDS_DATA = "learnWords_clicked"
+        const val TO_MENU_DATA = "menu_clicked"
     }
 }

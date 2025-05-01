@@ -35,9 +35,15 @@ fun main(args: Array<String>) {
 
         if (messageText == "Hello") botService.sendMessage(chatId, "Hello")
         if (messageText == "/start") botService.sendMenu(chatId)
-        if (data == botService.toStatisticsData) botService.sendStatistics(chatId, trainer.getStatistics())
-        if (data == botService.toLearnWordsData) botService.sendMessage(chatId, "Изучаем слова:")
-        if (data == botService.toMenuData) botService.sendMenu(chatId)
+        if (data == TelegramBotService.TO_STATISTICS_DATA) {
+            botService.sendStatistics(chatId, trainer.getStatistics())
+        }
+        if (data == TelegramBotService.TO_LEARN_WORDS_DATA) {
+            botService.sendMessage(chatId, "Изучаем слова:")
+        }
+        if (data == TelegramBotService.TO_MENU_DATA) {
+            botService.sendMenu(chatId)
+        }
 
         println(messageText)
         println(updates)
