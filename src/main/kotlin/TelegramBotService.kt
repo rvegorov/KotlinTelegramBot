@@ -93,10 +93,36 @@ class TelegramBotService(
         return makePostRequest("sendMessage", "application/json", statisticsBody)
     }
 
+    fun sendQuestion(chatId: Int, question: Question): String {
+        val answerButtonsText = question.variants.mapIndexed { i, word ->
+            """ [{
+                                "text": "${word.translate}",
+                                "callback_data": "${CALLBACK_DATA_ANSWER_PREFIX+i}"
+                            }]""".trimIndent()
+        }.joinToString(", ")
+        val questionBody = """
+            {
+                "chat_id": "$chatId",
+                "text": "<b>${question.correctAnswer.original}:</b>
+                ",
+                "parse_mode" : "HTML",
+                "reply_markup": {
+                    "inline_keyboard": [
+                            $answerButtonsText
+                    ]
+                }
+            }
+        """.trimIndent()
+        return makePostRequest("sendMessage", "application/json", questionBody)
+    }
+
     companion object {
         private const val TELEGRAM_API_URL = "https://api.telegram.org"
         const val TO_STATISTICS_DATA = "statistics_clicked"
         const val TO_LEARN_WORDS_DATA = "learnWords_clicked"
         const val TO_MENU_DATA = "menu_clicked"
+        const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
+        const val ANSWER_VARIANTS_COUNT = 4
+        const val ALL_WORDS_LEARNED_TEXT = "Вы выучили все слова в базе"
     }
 }

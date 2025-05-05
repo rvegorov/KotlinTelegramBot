@@ -39,7 +39,9 @@ fun main(args: Array<String>) {
             botService.sendStatistics(chatId, trainer.getStatistics())
         }
         if (data == TelegramBotService.TO_LEARN_WORDS_DATA) {
-            botService.sendMessage(chatId, "Изучаем слова:")
+            checkNextQuestionAndSend(
+                trainer, botService, chatId
+            )
         }
         if (data == TelegramBotService.TO_MENU_DATA) {
             botService.sendMenu(chatId)
@@ -48,6 +50,15 @@ fun main(args: Array<String>) {
         println(messageText)
         println(updates)
         Thread.sleep(3000)
-
     }
+}
+
+fun checkNextQuestionAndSend(
+    trainer: LearnWordTrainer,
+    telegramBotService: TelegramBotService,
+    chatId: Int
+) {
+    val question = trainer.getNextQuestion(TelegramBotService.ANSWER_VARIANTS_COUNT)
+    if (question == null) telegramBotService.sendMessage(chatId, TelegramBotService.ALL_WORDS_LEARNED_TEXT)
+    else telegramBotService.sendQuestion(chatId, question)
 }
