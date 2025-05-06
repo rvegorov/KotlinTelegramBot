@@ -4,7 +4,7 @@ import java.io.File
 
 class LearnWordTrainer(private val dictionaryFile: String, private val minLearned: Int) {
     val dictionary = loadDictionary(dictionaryFile)
-    private var question: Question? = null
+    var question: Question? = null
 
     fun getStatistics(): Statistics {
         val learnedCount = dictionary.count { it.correctAnswersCount >= minLearned }

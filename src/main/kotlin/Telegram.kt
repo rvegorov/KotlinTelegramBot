@@ -47,6 +47,20 @@ fun main(args: Array<String>) {
             botService.sendMenu(chatId)
         }
 
+        if (data != null && data.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX)) {
+            val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
+            if (trainer.checkAnswer(userAnswerIndex)) {
+                botService.sendMessage(chatId, "Правильно!")
+            } else {
+                botService.sendMessage(
+                    chatId,
+                    """|Неправильно! 
+                        |${trainer.question?.correctAnswer?.original} - это ${trainer.question?.correctAnswer?.translate}""".trimMargin()
+                )
+            }
+            checkNextQuestionAndSend(trainer, botService, chatId)
+        }
+
         println(messageText)
         println(updates)
         Thread.sleep(3000)
