@@ -97,13 +97,13 @@ class TelegramBotService(
         val answerButtonsText = question.variants.mapIndexed { i, word ->
             """ [{
                                 "text": "${word.translate}",
-                                "callback_data": "${CALLBACK_DATA_ANSWER_PREFIX+i}"
+                                "callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + i}"
                             }]""".trimIndent()
         }.joinToString(", ")
         val questionBody = """
             {
                 "chat_id": "$chatId",
-                "text": "<b>${question.correctAnswer.original}:</b>
+                "text": "<b>${question.correctAnswer.original}</b>
                 ",
                 "parse_mode" : "HTML",
                 "reply_markup": {
