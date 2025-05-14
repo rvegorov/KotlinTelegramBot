@@ -1,16 +1,15 @@
 package org.example
 
+import kotlinx.serialization.json.Json
 import java.net.URI
-import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.charset.StandardCharsets
 
 class TelegramBotService(
-    val botToken: String,
+    private val botToken: String,
+    private val json: Json
 ) {
-
     private val client: HttpClient = HttpClient.newBuilder().build()
 
     private fun makeRequest(request: HttpRequest): String {
@@ -31,89 +30,73 @@ class TelegramBotService(
             .header("Content-type", dataType)
             .POST(HttpRequest.BodyPublishers.ofString(data))
             .build()
-        return makeRequest(request)
+        val response = makeRequest(request)
+        println(response)
+        return response
     }
 
-    fun getUpdates(updateId: Int): String {
+    fun getUpdates(updateId: Long): String {
         return makeGetRequest("getUpdates", "offset=$updateId")
     }
 
-    fun sendMessage(chatId: Int, text: String): String {
-        val encodedText = URLEncoder.encode(text, StandardCharsets.UTF_8)
-        return makeGetRequest("sendMessage", "chat_id=$chatId&text=$encodedText")
+    private fun sendMessage(sendMessageRequest: SendMessageRequest): String {
+        val messageBody = json.encodeToString(sendMessageRequest)
+        return makePostRequest("sendMessage", "application/json", messageBody)
     }
 
-    fun sendMenu(chatId: Int): String {
-        val menuBody = """
-            {
-                "chat_id": "$chatId",
-                "text": "<b>Меню</b>",
-                "parse_mode" : "HTML",
-                "reply_markup": {
-                    "inline_keyboard": [
-                        [
-                            {
-                                "text": "Изучать слова",
-                                "callback_data": "learnWords_clicked"
-                            }
-                        ],
-                        [
-                            {
-                                "text": "Статистика",
-                                "callback_data": "statistics_clicked"
-                            }
-                        ]
-                    ]
-                }
-            }
-        """.trimIndent()
-        return makePostRequest("sendMessage", "application/json", menuBody)
+    fun sendText(chatId: Long, text: String): String {
+        val messageBody = SendMessageRequest(
+            chatId = chatId.toString(),
+            text = text,
+        )
+        return sendMessage(messageBody)
     }
 
-    fun sendStatistics(chatId: Int, statistics: Statistics): String {
-        val statisticsBody = """
-            {
-                "chat_id": "$chatId",
-                "text": "<b>Статистика:</b>
-                Выучено слов: ${statistics.learnedCount} из ${statistics.totalCount} (${statistics.percent}%)
-                ",
-                "parse_mode" : "HTML",
-                "reply_markup": {
-                    "inline_keyboard": [
-                        [
-                            {
-                                "text": "назад",
-                                "callback_data": "menu_clicked"
-                            }
-                        ]
-                    ]
-                }
-            }
-        """.trimIndent()
-        return makePostRequest("sendMessage", "application/json", statisticsBody)
+    fun sendMenu(chatId: Long): String {
+        val menuBody =
+            SendMessageRequest(
+                chatId = chatId.toString(),
+                text = "Меню",
+                replyMarkup = ReplyMarkup(
+                    listOf(
+                        listOf(Button("Изучать слова", TO_LEARN_WORDS_DATA)),
+                        listOf(Button("Статистика", TO_STATISTICS_DATA)),
+                    )
+                )
+            )
+        return sendMessage(menuBody)
     }
 
-    fun sendQuestion(chatId: Int, question: Question): String {
-        val answerButtonsText = question.variants.mapIndexed { i, word ->
-            """ [{
-                                "text": "${word.translate}",
-                                "callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + i}"
-                            }]""".trimIndent()
-        }.joinToString(", ")
-        val questionBody = """
-            {
-                "chat_id": "$chatId",
-                "text": "<b>${question.correctAnswer.original}</b>
-                ",
-                "parse_mode" : "HTML",
-                "reply_markup": {
-                    "inline_keyboard": [
-                            $answerButtonsText
-                    ]
-                }
-            }
-        """.trimIndent()
-        return makePostRequest("sendMessage", "application/json", questionBody)
+    fun sendStatistics(chatId: Long, statistics: Statistics): String {
+        val statisticsBody = SendMessageRequest(
+            chatId = chatId.toString(),
+            text = """Статистика:
+                Выучено слов: ${statistics.learnedCount} из ${statistics.totalCount} (${statistics.percent}%)""",
+            replyMarkup = ReplyMarkup(
+                listOf(
+                    listOf(
+                        Button(
+                            text = "назад",
+                            callbackData = TO_MENU_DATA,
+                        )
+                    )
+                )
+            ),
+        )
+        return sendMessage(statisticsBody)
+    }
+
+    fun sendQuestion(chatId: Long, question: Question): String {
+        val questionBody = SendMessageRequest(
+            chatId = chatId.toString(),
+            text = question.correctAnswer.original,
+            replyMarkup = ReplyMarkup(
+                listOf(question.variants.mapIndexed { i, word ->
+                    Button(word.translate, CALLBACK_DATA_ANSWER_PREFIX + i)
+                })
+            )
+        )
+        return sendMessage(questionBody)
     }
 
     companion object {
