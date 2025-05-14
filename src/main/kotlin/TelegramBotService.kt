@@ -31,6 +31,7 @@ class TelegramBotService(
             .POST(HttpRequest.BodyPublishers.ofString(data))
             .build()
         val response = makeRequest(request)
+        println(response)
         return response
     }
 
@@ -84,6 +85,18 @@ class TelegramBotService(
         )
         return sendMessage(statisticsBody)
     }
+
+    fun sendQuestion(chatId: Long, question: Question): String {
+        val questionBody = SendMessageRequest(
+            chatId = chatId.toString(),
+            text = question.correctAnswer.original,
+            replyMarkup = ReplyMarkup(
+                listOf(question.variants.mapIndexed { i, word ->
+                    Button(word.translate, CALLBACK_DATA_ANSWER_PREFIX + i)
+                })
+            )
+        )
+        return sendMessage(questionBody)
     }
 
     companion object {
