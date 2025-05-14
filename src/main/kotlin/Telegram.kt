@@ -111,9 +111,7 @@ fun main(args: Array<String>) {
         if (data != null && data.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX)) {
             val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
             if (trainer.checkAnswer(userAnswerIndex)) {
-                botService.sendText(chatId, "Правильно!")
-            } else {
-                botService.sendText(
+
                     chatId,
                     """|Неправильно! 
                         |${trainer.question?.correctAnswer?.original} - это ${trainer.question?.correctAnswer?.translate}""".trimMargin()
@@ -121,6 +119,7 @@ fun main(args: Array<String>) {
             }
             checkNextQuestionAndSend(trainer, botService, chatId)
         }
+
 
         Thread.sleep(3000)
     }
