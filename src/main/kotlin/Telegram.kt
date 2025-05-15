@@ -50,13 +50,11 @@ data class SendMessageRequest(
     val replyMarkup: ReplyMarkup? = null,
 )
 
-
 @Serializable
 data class ReplyMarkup(
     @SerialName("inline_keyboard")
     val inlineKeyboard: List<List<Button>>
 )
-
 
 @Serializable
 data class Button(
@@ -72,7 +70,7 @@ fun main(args: Array<String>) {
     val json = Json {
         ignoreUnknownKeys = true
     }
-    val botService = TelegramBotService(botToken,json)
+    val botService = TelegramBotService(botToken, json)
 
     val trainer = try {
         LearnWordTrainer(DICTIONARY_FILE, MIN_LEARNED)
@@ -82,9 +80,7 @@ fun main(args: Array<String>) {
     }
 
     while (true) {
-        val responseString = botService.getUpdates(lastUpdateId)
-        val response = json.decodeFromString<Response>(responseString)
-        val updates = response.result
+        val updates = botService.getUpdates(lastUpdateId)
         val firstUpdate = updates.firstOrNull() ?: continue
         val updateId = firstUpdate.updateId
         lastUpdateId = updateId + 1
@@ -93,8 +89,6 @@ fun main(args: Array<String>) {
         val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message?.chat?.id ?: continue
         val data = firstUpdate.callbackQuery?.data
 
-
-        if (messageText == "Hello") botService.sendText(chatId, "Hello")
         if (messageText == "/start") botService.sendMenu(chatId)
         if (data == TelegramBotService.TO_STATISTICS_DATA) {
             botService.sendStatistics(chatId, trainer.getStatistics())
@@ -108,7 +102,7 @@ fun main(args: Array<String>) {
             botService.sendMenu(chatId)
         }
 
-        if (data != null && data.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX)) {
+        if (data?.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX) == true) {
             val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
             if (trainer.checkAnswer(userAnswerIndex)) {
                 botService.sendText(chatId, "Правильно!")
@@ -121,7 +115,6 @@ fun main(args: Array<String>) {
             }
             checkNextQuestionAndSend(trainer, botService, chatId)
         }
-        println("R: "+responseString)
 
         Thread.sleep(3000)
     }
@@ -136,4 +129,3 @@ fun checkNextQuestionAndSend(
     if (question == null) telegramBotService.sendText(chatId, TelegramBotService.ALL_WORDS_LEARNED_TEXT)
     else telegramBotService.sendQuestion(chatId, question)
 }
-

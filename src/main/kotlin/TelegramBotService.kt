@@ -31,12 +31,12 @@ class TelegramBotService(
             .POST(HttpRequest.BodyPublishers.ofString(data))
             .build()
         val response = makeRequest(request)
-        println(response)
         return response
     }
 
-    fun getUpdates(updateId: Long): String {
-        return makeGetRequest("getUpdates", "offset=$updateId")
+    fun getUpdates(updateId: Long): List<Update> {
+        val responseString = makeGetRequest("getUpdates", "offset=$updateId")
+        return json.decodeFromString<Response>(responseString).result
     }
 
     private fun sendMessage(sendMessageRequest: SendMessageRequest): String {
@@ -93,7 +93,7 @@ class TelegramBotService(
             replyMarkup = ReplyMarkup(
                 listOf(question.variants.mapIndexed { i, word ->
                     Button(word.translate, CALLBACK_DATA_ANSWER_PREFIX + i)
-                })
+                }, listOf(Button("назад", TO_MENU_DATA)))
             )
         )
         return sendMessage(questionBody)
