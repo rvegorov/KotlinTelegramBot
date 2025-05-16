@@ -3,8 +3,11 @@ package org.example
 import kotlinx.serialization.Serializable
 import java.io.File
 
-class LearnWordTrainer(private val dictionaryFile: String, private val minLearned: Int) {
-    val dictionary = loadDictionary(dictionaryFile)
+class LearnWordTrainer(
+    private val fileName: String = DICTIONARY_FILE,
+    private val minLearned: Int = 3,
+) {
+    val dictionary = loadDictionary(fileName)
     var question: Question? = null
 
     fun getStatistics(): Statistics {
@@ -49,10 +52,13 @@ class LearnWordTrainer(private val dictionaryFile: String, private val minLearne
         } ?: false
     }
 
-    private fun loadDictionary(dictionaryFile: String = this.dictionaryFile): List<Word> {
-
+    private fun loadDictionary(fileName: String = this.fileName): List<Word> {
+        val wordsFile = File(fileName)
+        if (!wordsFile.exists()) {
+            File(DICTIONARY_FILE).copyTo(wordsFile, false)
+        }
         val dictionary: MutableList<Word> = mutableListOf()
-        File(dictionaryFile).forEachLine {
+        File(fileName).forEachLine {
             val line = it.split("|")
             val word = Word(line[0], line[1], line[2].toIntOrNull() ?: 0)
             dictionary.add(word)
@@ -64,7 +70,12 @@ class LearnWordTrainer(private val dictionaryFile: String, private val minLearne
         val dictionaryText = dictionary.joinToString("\n") { word ->
             "${word.original}|${word.translate}|${word.correctAnswersCount}"
         }
-        File(dictionaryFile).writeText(dictionaryText)
+        File(fileName).writeText(dictionaryText)
+    }
+
+    fun resetProgress() {
+        File(DICTIONARY_FILE).copyTo(File(this.fileName), true)
+        loadDictionary()
     }
 }
 
