@@ -1,7 +1,7 @@
-hello|привет|1
-dog|собака|2
+hello|привет|0
+dog|собака|0
 cat|кошка|0
-thank you|спасибо|3
+thank you|спасибо|0
 bird|птица|0
 sun|солнце|0
 bread|хлеб|0
@@ -9,6 +9,6 @@ keyboard|клавиатура|0
 incomprehensibility|непостижимость|0
 headphones|наушники|0
 walk|ходить|0
-beer|пиво|2
-bear|медведь|1
-cut|резать|2
+beer|пиво|0
+bear|медведь|0
+cut|резать|0
