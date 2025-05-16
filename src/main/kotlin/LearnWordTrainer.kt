@@ -1,5 +1,6 @@
 package org.example
 
+import kotlinx.serialization.Serializable
 import java.io.File
 
 class LearnWordTrainer(private val dictionaryFile: String, private val minLearned: Int) {
@@ -78,6 +79,7 @@ data class Question(
     val correctAnswer: Word,
 )
 
+@Serializable
 data class Word(
     val original: String,
     val translate: String,
