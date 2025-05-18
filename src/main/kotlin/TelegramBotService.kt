@@ -59,8 +59,8 @@ class TelegramBotService(
                 text = "Меню",
                 replyMarkup = ReplyMarkup(
                     listOf(
-                        listOf(Button("Изучать слова", TO_LEARN_WORDS_DATA)),
-                        listOf(Button("Статистика", TO_STATISTICS_DATA)),
+                        listOf(Button("Изучать слова", TO_LEARN_WORDS_DATA), Button("Статистика", TO_STATISTICS_DATA)),
+                        listOf(Button("Сбросить прогресс", RESET_STATISTICS_DATA)),
                     )
                 )
             )
@@ -102,6 +102,7 @@ class TelegramBotService(
     companion object {
         private const val TELEGRAM_API_URL = "https://api.telegram.org"
         const val TO_STATISTICS_DATA = "statistics_clicked"
+        const val RESET_STATISTICS_DATA = "reset_statistics_clicked"
         const val TO_LEARN_WORDS_DATA = "learnWords_clicked"
         const val TO_MENU_DATA = "menu_clicked"
         const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"

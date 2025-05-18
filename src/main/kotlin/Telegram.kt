@@ -72,50 +72,15 @@ fun main(args: Array<String>) {
     }
     val botService = TelegramBotService(botToken, json)
 
-    val trainer = try {
-        LearnWordTrainer(DICTIONARY_FILE, MIN_LEARNED)
-    } catch (e: Exception) {
-        println("Невозможно загрузить словарь")
-        return
-    }
+    val trainers = HashMap<Long, LearnWordTrainer>()
 
     while (true) {
         val updates = botService.getUpdates(lastUpdateId)
-        val firstUpdate = updates.firstOrNull() ?: continue
-        val updateId = firstUpdate.updateId
-        lastUpdateId = updateId + 1
+        if (updates.isEmpty()) continue
 
-        val messageText = firstUpdate.message?.text
-        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message?.chat?.id ?: continue
-        val data = firstUpdate.callbackQuery?.data
-
-        if (messageText == "/start") botService.sendMenu(chatId)
-        if (data == TelegramBotService.TO_STATISTICS_DATA) {
-            botService.sendStatistics(chatId, trainer.getStatistics())
-        }
-        if (data == TelegramBotService.TO_LEARN_WORDS_DATA) {
-            checkNextQuestionAndSend(
-                trainer, botService, chatId
-            )
-        }
-        if (data == TelegramBotService.TO_MENU_DATA) {
-            botService.sendMenu(chatId)
-        }
-
-        if (data?.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX) == true) {
-            val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
-            if (trainer.checkAnswer(userAnswerIndex)) {
-                botService.sendText(chatId, "Правильно!")
-            } else {
-                botService.sendText(
-                    chatId,
-                    """|Неправильно! 
-                        |${trainer.question?.correctAnswer?.original} - это ${trainer.question?.correctAnswer?.translate}""".trimMargin()
-                )
-            }
-            checkNextQuestionAndSend(trainer, botService, chatId)
-        }
-
+        val sortedUpdates = updates.sortedBy { it.updateId }
+        sortedUpdates.forEach { handleUpdate(it, botService, trainers) }
+        lastUpdateId = sortedUpdates.last().updateId + 1
         Thread.sleep(3000)
     }
 }
@@ -128,4 +93,41 @@ fun checkNextQuestionAndSend(
     val question = trainer.getNextQuestion(TelegramBotService.ANSWER_VARIANTS_COUNT)
     if (question == null) telegramBotService.sendText(chatId, TelegramBotService.ALL_WORDS_LEARNED_TEXT)
     else telegramBotService.sendQuestion(chatId, question)
+}
+
+fun handleUpdate(
+    update: Update,
+    botService: TelegramBotService,
+    trainers: HashMap<Long, LearnWordTrainer>
+) {
+    val messageText = update.message?.text
+    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
+    val data = update.callbackQuery?.data
+
+    val trainer = trainers.getOrPut(chatId) { LearnWordTrainer("$chatId.txt") }
+
+    if (messageText == "/start") botService.sendMenu(chatId)
+    when (data) {
+        TelegramBotService.TO_STATISTICS_DATA -> botService.sendStatistics(chatId, trainer.getStatistics())
+        TelegramBotService.TO_LEARN_WORDS_DATA -> checkNextQuestionAndSend(trainer, botService, chatId)
+        TelegramBotService.TO_MENU_DATA -> botService.sendMenu(chatId)
+        TelegramBotService.RESET_STATISTICS_DATA -> {
+            trainer.resetProgress()
+            botService.sendText(chatId, "Прогресс сброшен")
+        }
+    }
+    if (data?.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX) == true) {
+        val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
+        if (trainer.checkAnswer(userAnswerIndex)) {
+            botService.sendText(chatId, "Правильно!")
+        } else {
+            botService.sendText(
+                chatId,
+                """|Неправильно! 
+                        |${trainer.question?.correctAnswer?.original} - это ${trainer.question?.correctAnswer?.translate}""".trimMargin()
+            )
+        }
+        checkNextQuestionAndSend(trainer, botService, chatId)
+    }
+
 }
