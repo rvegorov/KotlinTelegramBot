@@ -107,23 +107,15 @@ fun handleUpdate(
     val trainer = trainers.getOrPut(chatId) { LearnWordTrainer("$chatId.txt") }
 
     if (messageText == "/start") botService.sendMenu(chatId)
-    if (data == TelegramBotService.TO_STATISTICS_DATA) {
-        botService.sendStatistics(chatId, trainer.getStatistics())
+    when (data) {
+        TelegramBotService.TO_STATISTICS_DATA -> botService.sendStatistics(chatId, trainer.getStatistics())
+        TelegramBotService.TO_LEARN_WORDS_DATA -> checkNextQuestionAndSend(trainer, botService, chatId)
+        TelegramBotService.TO_MENU_DATA -> botService.sendMenu(chatId)
+        TelegramBotService.RESET_STATISTICS_DATA -> {
+            trainer.resetProgress()
+            botService.sendText(chatId, "Прогресс сброшен")
+        }
     }
-    if (data == TelegramBotService.TO_LEARN_WORDS_DATA) {
-        checkNextQuestionAndSend(
-            trainer, botService, chatId
-        )
-    }
-    if (data == TelegramBotService.TO_MENU_DATA) {
-        botService.sendMenu(chatId)
-    }
-
-    if (data == TelegramBotService.RESET_STATISTICS_DATA) {
-        trainer.resetProgress()
-        botService.sendText(chatId, "Прогресс сброшен")
-    }
-
     if (data?.startsWith(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX) == true) {
         val userAnswerIndex = data.substringAfter(TelegramBotService.CALLBACK_DATA_ANSWER_PREFIX).toInt()
         if (trainer.checkAnswer(userAnswerIndex)) {
@@ -137,4 +129,5 @@ fun handleUpdate(
         }
         checkNextQuestionAndSend(trainer, botService, chatId)
     }
+
 }
