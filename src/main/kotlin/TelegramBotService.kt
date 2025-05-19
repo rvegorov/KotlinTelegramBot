@@ -1,10 +1,12 @@
 package org.example
 
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.Date
 
 class TelegramBotService(
     private val botToken: String,
@@ -13,8 +15,18 @@ class TelegramBotService(
     private val client: HttpClient = HttpClient.newBuilder().build()
 
     private fun makeRequest(request: HttpRequest): String {
-        val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
-        return response.body()
+        var response: HttpResponse<String>
+        while (true)
+        {
+            try {
+                response = client.send(request, HttpResponse.BodyHandlers.ofString())
+            } catch (e: IOException){
+                println(Date().toString()+": IOException in makeRequest()")
+                Thread.sleep(1000)
+                continue
+            }
+            return response.body()
+        }
     }
 
     private fun makeGetRequest(method: String, queryString: String = ""): String {
