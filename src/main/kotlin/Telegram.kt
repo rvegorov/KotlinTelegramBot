@@ -3,6 +3,8 @@ package org.example
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.util.*
+import kotlin.collections.HashMap
 
 @Serializable
 data class Update(
@@ -65,6 +67,7 @@ data class Button(
 )
 
 fun main(args: Array<String>) {
+    println(Date().toString() + ": Bot started")
     val botToken = args[0]
     var lastUpdateId = 0L
     val json = Json {
